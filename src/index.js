@@ -1,12 +1,36 @@
-
 const { response } = require('express');
 const express = require('express'); 
+const { initializeApp, cert } = require("firebase-admin/app");
+const { getFirestore } = require("firebase-admin/firestore");
+
+const credentials = require("../credentials.json");
+
+initializeApp({
+    credential: cert(credentials),
+})
+
+const db = getFirestore();
+
 
 const app = express();
 app.use(express.json()); //this telling the server accept json data
 
 app.get('/users', (req, res) => { //request, response shorthand. The route is the /. // THE SLASH IS THE LOCATION. COULD PUT '/USERS'
-    res.send('Hello World!');
+     const userCollection = db.collection("users");
+
+    userCollection
+    .get()
+    .then(snapshot => {
+        
+        const users = []
+        snapshot.forEach(doc => {
+            users.push({id: doc.id, ...doc.data()})
+        })
+        res.send(users)
+     })
+
+   
+     // res.send('Hello World!'); //res is response. 
 })
 
 app.post('/users', (req, res) => { 
